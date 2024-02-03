@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import numpy as np
+from numpy import diff, fliplr, nonzero, uint32, zeros
+from numpy.random import choice, randint
 
 
 def _empty_left(row):
@@ -11,9 +12,9 @@ def _empty_left(row):
         return False
     if row[0] == 0:  # easy case: leftmost slot is empty
         return True
-    ndx_fill = np.nonzero(row)[0]  # check if nonzero indices are contiguous
+    ndx_fill = nonzero(row)[0]  # check if nonzero indices are contiguous
     if len(ndx_fill) > 1:
-        if any(np.diff(ndx_fill) != 1):
+        if any(diff(ndx_fill) != 1):
             return True
     return False
 
@@ -75,7 +76,7 @@ class Grid:
 
     def reset(self):
         """reset grid to a game-start state"""
-        self.grid = np.zeros((self.sz, self.sz), dtype=np.uint32)
+        self.grid = zeros((self.sz, self.sz), dtype=uint32)
         self._spawn()
         self._spawn()  # spawn 2 tiles to start
 
@@ -124,9 +125,9 @@ class Grid:
 
     def _spawn(self):
         """spawn a new tile in an empty spot"""
-        val = np.random.randint(0, 2)*2 + 2  # 2 or 4
-        cands = np.nonzero(self.grid == 0)
-        cand_ndx = np.random.choice(range(len(cands[0])))
+        val = randint(0, 2)*2 + 2  # 2 or 4
+        cands = nonzero(self.grid == 0)
+        cand_ndx = choice(range(len(cands[0])))
         u, v = cands[0][cand_ndx], cands[1][cand_ndx]
         assert self.grid[u,
                          v] == 0, f'failed to spawn tile at nonempty {u},{v}'
@@ -134,8 +135,8 @@ class Grid:
 
     def _check_gameover(self):
         """check if any neighboring tiles match, or if any tiles are empty"""
-        col_same_mask = np.diff(self.grid, axis=0)
-        row_same_mask = np.diff(self.grid, axis=1)
+        col_same_mask = diff(self.grid, axis=0)
+        row_same_mask = diff(self.grid, axis=1)
         if (col_same_mask == 0).any():
             return False
         if (row_same_mask == 0).any():
