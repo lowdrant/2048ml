@@ -54,15 +54,18 @@ def _move_left(grid):
 
 
 def _move_right(grid):
-    return fliplr(_move_left(fliplr(grid)))
+    grid, score = _move_left(fliplr(grid))
+    return fliplr(grid), score
 
 
 def _move_up(grid):
-    return _move_left(grid.T).T
+    grid, score = _move_left(grid.T)
+    return grid.T, score
 
 
 def _move_down(grid):
-    return fliplr(_move_left(fliplr(grid.T))).T
+    grid, score = _move_left(fliplr(grid.T))
+    return fliplr(grid).T, score
 
 
 class Grid:
@@ -149,8 +152,25 @@ class Grid:
 
 if __name__ == '__main__':
     print('Running 2048 unit tests (no err=pass)...')
+    refarr = array([4, 4, 2, 2])
     g = Grid()
+    # Left
     g.grid = zeros((4, 4), dtype=uint32)
-    g[0] = array([4, 4, 2, 2])
+    g[0] = refarr.copy()
     g._apply_cmd(0)
     assert array_equal(g[0], [8, 4, 0, 0]), f'left error: g[0]={g[0]}'
+    # Right
+    g.grid = zeros((4, 4), dtype=uint32)
+    g[0] = refarr.copy()
+    g._apply_cmd(1)
+    assert array_equal(g[0], [0, 0, 8, 4]), f'right error: g[0]={g[0]}'
+    # Up
+    g.grid = zeros((4, 4), dtype=uint32)
+    g.grid.T[0] = refarr.copy()
+    g._apply_cmd(2)
+    assert array_equal(g.grid.T[0], [8, 4, 0, 0]), f'up error: g[0]={g[0]}'
+    # Down
+    g.grid = zeros((4, 4), dtype=uint32)
+    g.grid.T[0] = refarr.copy()
+    g._apply_cmd(3)
+    assert array_equal(g.grid.T[0], [0, 0, 8, 4]), f'down error: g[0]={g[0]}'
