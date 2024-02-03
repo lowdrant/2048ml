@@ -47,9 +47,11 @@ def _combine_left(row):
 
 def _move_left(grid):
     """apply left movement to 2048 grid"""
+    score = 0
     for i in range(len(grid)):
         grid[i] = _slide_left(grid[i])
-        grid[i], score = _combine_left(grid[i])
+        grid[i], scoretmp = _combine_left(grid[i])
+        score += scoretmp
     return grid, score
 
 
@@ -102,7 +104,6 @@ class Grid:
         return self.grid.__setitem__(*args, **kwargs)
 
     def __call__(self, cmd, print_grid=False):
-        # TODO: reject cmd if nothing to do in that dir
         self._apply_cmd(cmd)
         self._spawn()
         self._check_gameover()
@@ -113,6 +114,9 @@ class Grid:
         """Update the grid by applying a direction movement command
             INPUT:
                 cmd -- 0:left 1:right 2:up 3:down
+            OUTPUT:
+                -1 if command can't move grid in specified direction
+                0 if nominal
         """
         if cmd == 0:
             transform = _move_left
@@ -124,8 +128,12 @@ class Grid:
             transform = _move_down
         else:
             raise RuntimeError(f'Invalid cmd: {cmd}')
-        self.grid, score = transform(self.grid)
-        self.score += score
+        gridtmp, scoretmp = transform(self.grid.copy())
+        if array_equal(self.grid, gridtmp):
+            return -1
+        self.grid = gridtmp
+        self.score += scoretmp
+        return 0
 
     def _spawn(self):
         """spawn a new tile in an empty spot"""
@@ -152,6 +160,8 @@ class Grid:
 
 if __name__ == '__main__':
     print('Running 2048 unit tests (no err=pass)...')
+    # ---------
+    # Direction
     refarr = array([4, 4, 2, 2])
     g = Grid()
     # Left
@@ -174,3 +184,19 @@ if __name__ == '__main__':
     g.grid.T[0] = refarr.copy()
     g._apply_cmd(3)
     assert array_equal(g.grid.T[0], [0, 0, 8, 4]), f'down error: g[0]={g[0]}'
+    # ---------
+    # Invalid command
+    g = Grid()
+    g.grid = zeros((4, 4), dtype=uint32)
+    g[0] = refarr.copy()
+    for i in range(3):
+        g._apply_cmd(0)
+    ret = g._apply_cmd(0)
+    assert ret == -1, 'failed to recognize invalid direction command'
+    # ---------
+    # Score
+    g.reset()
+    g.grid = zeros((4, 4), dtype=uint32)
+    g[0] = refarr.copy()
+    g._apply_cmd(0)
+    assert g.score == 12, f'incorrect score: score={g.score}'
