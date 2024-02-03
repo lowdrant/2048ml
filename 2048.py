@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from numpy import diff, fliplr, nonzero, uint32, zeros
+from numpy import array, array_equal, diff, fliplr, nonzero, uint32, zeros
 from numpy.random import choice, randint
 
 
@@ -34,17 +34,14 @@ def _slide_left(row):
 def _combine_left(row):
     """combine all numbers left; assumes no zeros inbetween"""
     sz = len(row)
-    j = 0
     score = 0
-    while j < sz-1:
+    for j in range(sz-1):
         if row[j] == row[j+1]:
             row[j] += row[j+1]
             score += row[j]
             for k in range(j+1, sz-1):
                 row[k] = row[k+1]
-                row[k] = 0
-            j += 1  # skip to next "pair"
-        j += 1
+            row[sz-1] = 0  # !! don't forget to zero-fill'
     return row, score
 
 
@@ -151,8 +148,9 @@ class Grid:
 
 
 if __name__ == '__main__':
+    print('Running 2048 unit tests (no err=pass)...')
     g = Grid()
-    print(g, '\n')
-    for i in range(10):
-        g(0, print_grid=1)
-        print()
+    g.grid = zeros((4, 4), dtype=uint32)
+    g[0] = array([4, 4, 2, 2])
+    g._apply_cmd(0)
+    assert array_equal(g[0], [8, 4, 0, 0]), f'left error: g[0]={g[0]}'
