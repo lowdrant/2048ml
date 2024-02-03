@@ -35,23 +35,25 @@ def _combine_left(row):
     """combine all numbers left; assumes no zeros inbetween"""
     sz = len(row)
     j = 0
+    score = 0
     while j < sz-1:
         if row[j] == row[j+1]:
             row[j] += row[j+1]
+            score += row[j]
             for k in range(j+1, sz-1):
                 row[k] = row[k+1]
                 row[k] = 0
             j += 1  # skip to next "pair"
         j += 1
-    return row
+    return row, score
 
 
 def _move_left(grid):
     """apply left movement to 2048 grid"""
     for i in range(len(grid)):
         grid[i] = _slide_left(grid[i])
-        grid[i] = _combine_left(grid[i])
-    return grid
+        grid[i], score = _combine_left(grid[i])
+    return grid, score
 
 
 def _move_right(grid):
@@ -79,6 +81,7 @@ class Grid:
         self.grid = zeros((self.sz, self.sz), dtype=uint32)
         self._spawn()
         self._spawn()  # spawn 2 tiles to start
+        self.score = 0
 
     def __format__(self, *args, **kwargs):
         return self.grid.__format__(*args, **kwargs)
@@ -121,7 +124,8 @@ class Grid:
             transform = _move_down
         else:
             raise RuntimeError(f'Invalid cmd: {cmd}')
-        self.grid = transform(self.grid)
+        self.grid, score = transform(self.grid)
+        self.score += score
 
     def _spawn(self):
         """spawn a new tile in an empty spot"""
