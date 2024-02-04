@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""2048 game basic class implementation"""
 from numpy import array, array_equal, diff, fliplr, nonzero, uint32, zeros
 from numpy.random import choice, randint
 
@@ -71,8 +72,21 @@ def _move_down(grid):
 
 
 class Grid:
-    """Grid object for 2048 game. Grid is indexable and printable like a
-        numpy array"""
+    """Grid object for 2048 game. Indexable and printable like a numpy array
+        USAGE:
+            >>> g = Grid(sz=4)
+            >>> g(0)  # move left
+            >>> g(1)  # move right
+            >>> g(2)  # move up
+            >>> g(3)  # move right
+            >>> g(0, print_grid=True)  # move left and print updated grid
+        ATTRIBUTES:
+            grid -- NxN grid of the 2048 board
+            score -- score of game so far
+        METHODS:
+            reset -- reset score to 0 and grid to game start state
+            __call__ -- update the game state by moving the grid in a direction
+    """
 
     def __init__(self, sz=4):
         self.sz = sz
