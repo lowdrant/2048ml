@@ -1,5 +1,8 @@
-from torch import nn
 import torch.nn.functional as F
+from torch import nn
+
+from grid import Grid
+
 N_ACTIONS = 4
 
 
